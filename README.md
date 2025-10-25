@@ -50,22 +50,26 @@ frontend/
 ### Installation
 
 1. **Install dependencies**:
+
    ```bash
    npm install
    ```
 
 2. **Set up environment variables**:
+
    ```bash
    cp .env.example .env.local
    ```
-   
+
    Edit `.env.local` with your API keys:
+
    ```
    NEXT_PUBLIC_API_URL=http://localhost:8000
    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
    ```
 
 3. **Start development server**:
+
    ```bash
    npm run dev
    ```
