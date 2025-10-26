@@ -19,6 +19,7 @@ interface TripData {
   travelers: number;
   budget: number;
   interests: string[];
+  starting_location?: string;
 }
 
 export function useHotels(tripData: TripData | null) {

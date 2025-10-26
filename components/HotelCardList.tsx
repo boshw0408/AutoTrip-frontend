@@ -10,10 +10,12 @@ interface TripData {
   travelers: number
   budget: number
   interests: string[]
+  starting_location?: string
 }
 
 interface HotelCardListProps {
   tripData: TripData
+  onHotelSelect?: (hotel: Hotel | null) => void
 }
 
 interface Hotel {
@@ -30,9 +32,16 @@ interface Hotel {
   distance_from_center?: string
 }
 
-export default function HotelCardList({ tripData }: HotelCardListProps) {
+export default function HotelCardList({ tripData, onHotelSelect }: HotelCardListProps) {
   const { data: hotels, isLoading, error } = useHotels(tripData)
   const [selectedHotel, setSelectedHotel] = useState<string | null>(null)
+  
+  const handleHotelClick = (hotel: Hotel) => {
+    setSelectedHotel(hotel.id)
+    if (onHotelSelect) {
+      onHotelSelect(hotel)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -104,7 +113,7 @@ export default function HotelCardList({ tripData }: HotelCardListProps) {
           className={`bg-white rounded-lg shadow-lg p-6 cursor-pointer transition-all duration-200 ${
             selectedHotel === hotel.id ? 'ring-2 ring-primary-500 shadow-xl' : 'hover:shadow-xl'
           }`}
-          onClick={() => setSelectedHotel(hotel.id)}
+          onClick={() => handleHotelClick(hotel)}
         >
           <div className="flex space-x-4">
             {/* Hotel Image */}

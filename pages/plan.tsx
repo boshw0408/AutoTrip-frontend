@@ -23,6 +23,7 @@ export default function PlanTrip() {
   const router = useRouter()
   const [tripData, setTripData] = useState<TripData | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
+  const [selectedHotel, setSelectedHotel] = useState<any>(null)
   const { mutate: generateItinerary, isPending, data: itinerary } = useGenerateItinerary()
 
   const handleTripSubmit = async (data: any) => {
@@ -33,7 +34,9 @@ export default function PlanTrip() {
   const handleGenerateItinerary = () => {
     if (tripData) {
       setCurrentStep(3)
-      generateItinerary(tripData)
+      // Add selected hotel to trip data
+      const tripDataWithHotel = { ...tripData, selectedHotel }
+      generateItinerary(tripDataWithHotel)
     }
   }
 
@@ -119,14 +122,18 @@ export default function PlanTrip() {
               <div className="grid lg:grid-cols-2 gap-8">
                 <div>
                   <h2 className="text-2xl font-bold mb-6">Recommended Hotels</h2>
-                  <HotelCardList tripData={{
-                    destination: tripData.location,
-                    check_in: tripData.startDate,
-                    check_out: tripData.endDate,
-                    travelers: tripData.travelers,
-                    budget: tripData.budget,
-                    interests: tripData.interests
-                  }} />
+                  <HotelCardList 
+                    tripData={{
+                      destination: tripData.location,
+                      check_in: tripData.startDate,
+                      check_out: tripData.endDate,
+                      travelers: tripData.travelers,
+                      budget: tripData.budget,
+                      interests: tripData.interests,
+                      starting_location: tripData.startingLocation
+                    }}
+                    onHotelSelect={setSelectedHotel}
+                  />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold mb-6">Map View</h2>

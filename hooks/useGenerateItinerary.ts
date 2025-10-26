@@ -9,6 +9,7 @@ interface TripData {
   budget: number;
   travelers: number;
   interests: string[];
+  selectedHotel?: any;
 }
 
 interface ItineraryResponse {
@@ -34,6 +35,7 @@ export function useGenerateItinerary() {
         budget: tripData.budget,
         travelers: tripData.travelers,
         interests: tripData.interests,
+        selected_hotel: tripData.selectedHotel || null,
       };
       const response = await apiClient.post("/itinerary/generate", payload);
       return response.data;
