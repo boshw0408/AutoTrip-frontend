@@ -1,10 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Star, MapPin, DollarSign, Wifi, Car, Coffee } from 'lucide-react'
 import { useHotels } from '../hooks/useHotels'
 
+interface TripData {
+  destination: string
+  check_in: string
+  check_out: string
+  travelers: number
+  budget: number
+  interests: string[]
+}
+
 interface HotelCardListProps {
-  location: string
+  tripData: TripData
 }
 
 interface Hotel {
@@ -21,8 +30,8 @@ interface Hotel {
   distance_from_center?: string
 }
 
-export default function HotelCardList({ location }: HotelCardListProps) {
-  const { hotels, isLoading, error } = useHotels(location)
+export default function HotelCardList({ tripData }: HotelCardListProps) {
+  const { data: hotels, isLoading, error } = useHotels(tripData)
   const [selectedHotel, setSelectedHotel] = useState<string | null>(null)
 
   if (isLoading) {

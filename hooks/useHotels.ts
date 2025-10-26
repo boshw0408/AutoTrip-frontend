@@ -12,14 +12,24 @@ interface Hotel {
   distance: string;
 }
 
-export function useHotels(location: string) {
+interface TripData {
+  destination: string;
+  check_in: string;
+  check_out: string;
+  travelers: number;
+  budget: number;
+  interests: string[];
+}
+
+export function useHotels(tripData: TripData | null) {
   return useQuery({
-    queryKey: ["hotels", location],
+    queryKey: ["hotels", tripData],
     queryFn: async (): Promise<Hotel[]> => {
-      const response = await apiClient.post("/hotels/search", { location });
+      if (!tripData) return [];
+      const response = await apiClient.post("/hotels/search", tripData);
       return response.data;
     },
-    enabled: !!location,
+    enabled: !!tripData,
   });
 }
 

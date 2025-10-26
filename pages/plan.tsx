@@ -119,7 +119,14 @@ export default function PlanTrip() {
               <div className="grid lg:grid-cols-2 gap-8">
                 <div>
                   <h2 className="text-2xl font-bold mb-6">Recommended Hotels</h2>
-                  <HotelCardList location={tripData.location} />
+                  <HotelCardList tripData={{
+                    destination: tripData.location,
+                    check_in: tripData.startDate,
+                    check_out: tripData.endDate,
+                    travelers: tripData.travelers,
+                    budget: tripData.budget,
+                    interests: tripData.interests
+                  }} />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold mb-6">Map View</h2>
