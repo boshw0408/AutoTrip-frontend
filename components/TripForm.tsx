@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { motion } from 'framer-motion'
 import { Calendar, DollarSign, MapPin, Users, Plane } from 'lucide-react'
@@ -30,8 +31,20 @@ const interests = [
 ]
 
 export default function TripForm({ onSubmit }: TripFormProps) {
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<TripFormData>()
+  const { register, handleSubmit, watch, formState: { errors }, setValue } = useForm<TripFormData>()
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
+  const startDate = watch('startDate')
+
+  // Auto-fill end date when start date changes
+  React.useEffect(() => {
+    if (startDate) {
+      const start = new Date(startDate)
+      const end = new Date(start)
+      end.setDate(end.getDate() + 2) // Add 2 days
+      const endDateString = end.toISOString().split('T')[0]
+      setValue('endDate', endDateString)
+    }
+  }, [startDate, setValue])
 
   const toggleInterest = (interest: string) => {
     setSelectedInterests(prev => 
@@ -48,6 +61,9 @@ export default function TripForm({ onSubmit }: TripFormProps) {
     })
   }
 
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split('T')[0]
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -55,7 +71,7 @@ export default function TripForm({ onSubmit }: TripFormProps) {
       className="bg-white rounded-lg shadow-lg p-8"
     >
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Plan Your Trip</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Plan Your 2 Day Trip</h2>
         <p className="text-gray-600">Tell us about your travel preferences</p>
       </div>
 
@@ -104,6 +120,7 @@ export default function TripForm({ onSubmit }: TripFormProps) {
             <input
               {...register('startDate', { required: 'Start date is required' })}
               type="date"
+              min={today}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
             {errors.startDate && (
@@ -118,7 +135,8 @@ export default function TripForm({ onSubmit }: TripFormProps) {
             <input
               {...register('endDate', { required: 'End date is required' })}
               type="date"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              readOnly
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
             />
             {errors.endDate && (
               <p className="mt-1 text-sm text-red-600">{errors.endDate.message}</p>

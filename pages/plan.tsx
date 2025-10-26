@@ -56,7 +56,7 @@ export default function PlanTrip() {
   return (
     <>
       <Head>
-        <title>Plan Your Trip - Travel AI</title>
+        <title>Plan Your Trip - AutoTrip</title>
         <meta name="description" content="Plan your perfect trip with AI recommendations" />
       </Head>
 
@@ -168,7 +168,7 @@ export default function PlanTrip() {
                 <div className="text-center py-20">
                   <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-600"></div>
                   <p className="mt-4 text-gray-600">Generating your AI-powered itinerary...</p>
-                  <p className="mt-2 text-sm text-gray-500">This may take 30-60 seconds</p>
+                  <p className="mt-2 text-sm text-gray-500">This may take few seconds</p>
                 </div>
               ) : itinerary ? (
                 <ItineraryList itinerary={itinerary} />
