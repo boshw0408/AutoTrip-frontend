@@ -26,6 +26,7 @@ export function useGenerateItinerary() {
 
   return useMutation({
     mutationFn: async (tripData: TripData): Promise<ItineraryResponse> => {
+      console.log("Generating itinerary with data:", tripData);
       // Map frontend field names to backend field names
       const payload = {
         origin: tripData.startingLocation,
@@ -37,12 +38,23 @@ export function useGenerateItinerary() {
         interests: tripData.interests,
         selected_hotel: tripData.selectedHotel || null,
       };
-      const response = await apiClient.post("/itinerary/generate", payload);
-      return response.data;
+      console.log("Sending payload:", payload);
+      try {
+        const response = await apiClient.post("/itinerary/generate", payload);
+        console.log("Received response:", response.data);
+        return response.data;
+      } catch (error) {
+        console.error("Error generating itinerary:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
+      console.log("Itinerary generated successfully:", data);
       // Invalidate and refetch trips
       queryClient.invalidateQueries({ queryKey: ["trips"] });
+    },
+    onError: (error) => {
+      console.error("Mutation error:", error);
     },
   });
 }

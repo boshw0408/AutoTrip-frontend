@@ -140,7 +140,7 @@ export default function HotelCardList({ tripData, onHotelSelect }: HotelCardList
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center text-green-600">
                     <DollarSign className="h-4 w-4 mr-1" />
-                    <span className="font-semibold">${hotel.price_per_night || hotel.price || 0}</span>
+                    <span className="font-semibold">${Math.ceil(hotel.price_per_night || hotel.price || 0)}</span>
                     <span className="text-sm text-gray-600 ml-1">/night</span>
                   </div>
                   <span className="text-sm text-gray-500">{hotel.distance_from_center || hotel.distance || 'N/A'} from center</span>

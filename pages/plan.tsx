@@ -32,11 +32,17 @@ export default function PlanTrip() {
   }
 
   const handleGenerateItinerary = () => {
+    console.log("Generate button clicked!");
+    console.log("tripData:", tripData);
+    console.log("selectedHotel:", selectedHotel);
     if (tripData) {
       setCurrentStep(3)
       // Add selected hotel to trip data
       const tripDataWithHotel = { ...tripData, selectedHotel }
+      console.log("Calling generateItinerary with:", tripDataWithHotel);
       generateItinerary(tripDataWithHotel)
+    } else {
+      console.error("No tripData available!");
     }
   }
 
@@ -171,7 +177,8 @@ export default function PlanTrip() {
                   <button
                     onClick={() => {
                       if (tripData) {
-                        generateItinerary(tripData)
+                        const tripDataWithHotel = { ...tripData, selectedHotel }
+                        generateItinerary(tripDataWithHotel)
                       }
                     }}
                     className="mt-4 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
