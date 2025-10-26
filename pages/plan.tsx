@@ -8,6 +8,7 @@ import MapView from '../components/MapView'
 import HotelCardList from '../components/HotelCardList'
 import ItineraryList from '../components/ItineraryList'
 import { useGenerateItinerary } from '../hooks/useGenerateItinerary'
+import { useHotels } from '../hooks/useHotels'
 
 interface TripData {
   startingLocation: string
@@ -26,6 +27,18 @@ export default function PlanTrip() {
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedHotel, setSelectedHotel] = useState<any>(null)
   const { mutate: generateItinerary, isPending, data: itinerary } = useGenerateItinerary()
+  
+  // Fetch hotels for the map
+  const hotelsQueryData = tripData ? {
+    destination: tripData.location,
+    check_in: tripData.startDate,
+    check_out: tripData.endDate,
+    travelers: tripData.travelers,
+    budget: tripData.budget,
+    interests: tripData.interests,
+    starting_location: tripData.startingLocation
+  } : null
+  const { data: hotels } = useHotels(hotelsQueryData)
 
   const handleTripSubmit = async (data: any) => {
     setTripData(data)
@@ -144,7 +157,12 @@ export default function PlanTrip() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold mb-6">Map View</h2>
-                  <MapView location={tripData.location} />
+                  <MapView 
+                    location={tripData.location} 
+                    hotels={hotels}
+                    startLocation={tripData.startingLocation}
+                    showRoute={true}
+                  />
                 </div>
               </div>
               

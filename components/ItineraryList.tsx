@@ -351,7 +351,6 @@ export default function ItineraryList({ itinerary }: ItineraryListProps) {
                           <span className="text-gray-500">{item.duration}</span>
                           {item.cost !== undefined && item.cost > 0 && (
                             <div className="flex items-center space-x-1 text-green-600 font-medium">
-                              <DollarSign className="h-4 w-4" />
                               <span>${item.cost}</span>
                             </div>
                           )}

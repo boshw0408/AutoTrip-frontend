@@ -14,15 +14,21 @@ interface MapViewProps {
   height?: string
   /** Optional ordered stops for directions (start -> waypoints -> end) */
   stops?: LatLng[]
+  /** Optional hotels data to display on map */
+  hotels?: any[]
+  /** Starting location for route */
+  startLocation?: string
+  /** Show route from start to destination */
+  showRoute?: boolean
 }
 
-// Small wrapper to attach a DirectionsRenderer to a map and style the polyline black
+// Small wrapper to attach a DirectionsRenderer to a map and style the polyline red
 function DirectionsRendererWrapper({ directions, map }: { directions: any; map: any }) {
   useEffect(() => {
     if (!map || !directions) return
     const google = (window as any).google
     const renderer = new google.maps.DirectionsRenderer({
-      polylineOptions: { strokeColor: '#000000', strokeWeight: 6 },
+      polylineOptions: { strokeColor: '#ef4444', strokeWeight: 6 },
       suppressMarkers: true,
       preserveViewport: true,
     })
@@ -35,7 +41,7 @@ function DirectionsRendererWrapper({ directions, map }: { directions: any; map: 
   return null
 }
 
-export default function MapView({ location, height = '400px', stops }: MapViewProps) {
+export default function MapView({ location, height = '400px', stops, hotels: propHotels, startLocation, showRoute = false }: MapViewProps) {
   // Load the Google Maps JS API using the public env var (set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -51,6 +57,7 @@ export default function MapView({ location, height = '400px', stops }: MapViewPr
   const [directionsError, setDirectionsError] = useState<string | null>(null)
   const [map, setMap] = useState<any | null>(null)
   const [selectedHotel, setSelectedHotel] = useState<any | null>(null)
+  const [routeStops, setRouteStops] = useState<LatLng[]>([])
 
   // Fetch aggregated location data (includes server-side geocoding + hotels) from backend
   const { data: aggResp, isLoading: aggLoading } = useQuery({
@@ -64,7 +71,9 @@ export default function MapView({ location, height = '400px', stops }: MapViewPr
 
   // The backend GET returns a wrapper { status, location, data, summary }
   const aggData = (aggResp as any)?.data ?? (aggResp as any) ?? null
-  const hotels: any[] = aggData?.hotels || []
+  const backendHotels: any[] = aggData?.hotels || []
+  // Use prop hotels if provided, otherwise use backend hotels
+  const hotels: any[] = propHotels || backendHotels
   const serverCenter = aggData?.basic_info?.coordinates || null
 
   const center = useMemo(() => {
@@ -81,6 +90,67 @@ export default function MapView({ location, height = '400px', stops }: MapViewPr
   // Compute directions client-side using the Google DirectionsService when stops change
   useEffect(() => {
     if (!isLoaded) return
+    
+    // If showRoute is enabled and we have startLocation, geocode and compute route
+    if (showRoute && startLocation && location) {
+      const google = (window as any).google
+      if (!google || !google.maps) {
+        setDirectionsError('Google Maps API not available')
+        return
+      }
+
+      const geocoder = new google.maps.Geocoder()
+      const directionsService = new google.maps.DirectionsService()
+
+      // Geocode both start and destination
+      Promise.all([
+        new Promise<LatLng>((resolve, reject) => {
+          geocoder.geocode({ address: startLocation }, (results: any, status: string) => {
+            if (status === 'OK' && results[0]) {
+              const loc = results[0].geometry.location
+              resolve({ lat: loc.lat(), lng: loc.lng() })
+            } else {
+              reject(new Error('Failed to geocode start location'))
+            }
+          })
+        }),
+        new Promise<LatLng>((resolve, reject) => {
+          geocoder.geocode({ address: location }, (results: any, status: string) => {
+            if (status === 'OK' && results[0]) {
+              const loc = results[0].geometry.location
+              resolve({ lat: loc.lat(), lng: loc.lng() })
+            } else {
+              reject(new Error('Failed to geocode destination'))
+            }
+          })
+        })
+      ]).then(([startCoords, destCoords]) => {
+        setRouteStops([startCoords, destCoords])
+        
+        // Get directions
+        directionsService.route(
+          {
+            origin: startCoords,
+            destination: destCoords,
+            travelMode: google.maps.TravelMode.DRIVING,
+          },
+          (result: any, status: string) => {
+            if (status === 'OK' && result) {
+              setDirections(result)
+              setDirectionsError(null)
+            } else {
+              setDirections(null)
+              setDirectionsError(`Directions request failed: ${status}`)
+            }
+          }
+        )
+      }).catch((error) => {
+        setDirectionsError(error.message)
+      })
+      return
+    }
+    
+    // Original logic for manual stops
     if (!stops || stops.length < 2) {
       setDirections(null)
       setDirectionsError(null)
@@ -117,7 +187,7 @@ export default function MapView({ location, height = '400px', stops }: MapViewPr
         }
       }
     )
-  }, [isLoaded, stops])
+  }, [isLoaded, stops, showRoute, startLocation, location])
 
   return (
     <motion.div
@@ -150,9 +220,22 @@ export default function MapView({ location, height = '400px', stops }: MapViewPr
               onLoad={(m: any) => setMap(m)}
               onUnmount={() => setMap(null)}
             >
-              {/* Render computed directions (black) */}
+              {/* Render computed directions (red) */}
               {directions && map && (
-                <DirectionsRendererWrapper directions={directions} map={map} />
+                <>
+                  <DirectionsRendererWrapper directions={directions} map={map} />
+                  {/* Auto-fit map to route bounds with padding for zoom */}
+                  {(() => {
+                    const bounds = new (window as any).google.maps.LatLngBounds()
+                    directions.routes[0].legs.forEach((leg: any) => {
+                      bounds.extend(leg.start_location)
+                      bounds.extend(leg.end_location)
+                    })
+                    // Reduced padding to 20px for a more zoomed-in view
+                    map.fitBounds(bounds, { top: 20, right: 20, bottom: 20, left: 20 })
+                    return null
+                  })()}
+                </>
               )}
 
               {/* Render simple markers for stops while we build custom hotel markers */}
@@ -160,30 +243,59 @@ export default function MapView({ location, height = '400px', stops }: MapViewPr
                 <Marker key={`stop-${i}`} position={{ lat: s.lat, lng: s.lng }} />
               ))}
 
-              {/* Hotel markers (from backend aggregated data). Normalize common field names */}
+              {/* Hotel markers with circular images using OverlayView */}
               {hotels && hotels.length > 0 && (
-                <MarkerClusterer>
-                  {(clusterer: any) => (
-                    <>
-                      {hotels
-                        .map((h: any) => {
-                          // Normalize coordinates
-                          const lat = h.lat ?? h.latitude ?? h.location?.lat ?? h.coordinates?.lat ?? h.location?.latitude
-                          const lng = h.lng ?? h.longitude ?? h.location?.lng ?? h.coordinates?.lng ?? h.location?.longitude
-                          return { ...h, _lat: lat, _lng: lng }
-                        })
-                        .filter((h: any) => typeof h._lat === 'number' && typeof h._lng === 'number')
-                        .map((h: any) => (
-                          <Marker
-                            key={h.id || `${h.name}-${h._lat}-${h._lng}`}
-                            position={{ lat: h._lat, lng: h._lng }}
-                            clusterer={clusterer}
+                <>
+                  {hotels
+                    .map((h: any) => {
+                      // Normalize coordinates
+                      const lat = h.lat ?? h.latitude ?? h.location?.lat ?? h.coordinates?.lat ?? h.location?.latitude
+                      const lng = h.lng ?? h.longitude ?? h.location?.lng ?? h.coordinates?.lng ?? h.location?.longitude
+                      return { ...h, _lat: lat, _lng: lng }
+                    })
+                    .filter((h: any) => typeof h._lat === 'number' && typeof h._lng === 'number')
+                    .map((h: any) => {
+                      const hotelImage = h.image || (h.photos && h.photos[0])
+                      
+                      return (
+                        <OverlayView
+                          key={h.id || `${h.name}-${h._lat}-${h._lng}`}
+                          position={{ lat: h._lat, lng: h._lng }}
+                          mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                        >
+                          <div 
+                            className="cursor-pointer transform hover:scale-110 transition-transform"
                             onClick={() => setSelectedHotel(h)}
-                          />
-                        ))}
-                    </>
-                  )}
-                </MarkerClusterer>
+                            style={{
+                              width: '50px',
+                              height: '50px',
+                              borderRadius: '50%',
+                              overflow: 'hidden',
+                              border: '3px solid white',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                              background: hotelImage ? 'none' : '#e5e7eb'
+                            }}
+                          >
+                            {hotelImage ? (
+                              <img 
+                                src={hotelImage} 
+                                alt={h.name}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                <span className="text-lg">🏨</span>
+                              </div>
+                            )}
+                          </div>
+                        </OverlayView>
+                      )
+                    })}
+                </>
               )}
 
               {/* Show a richer OverlayView when a hotel is selected */}
