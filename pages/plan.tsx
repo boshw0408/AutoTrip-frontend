@@ -9,16 +9,32 @@ import HotelCardList from '../components/HotelCardList'
 import ItineraryList from '../components/ItineraryList'
 import { useGenerateItinerary } from '../hooks/useGenerateItinerary'
 
+interface TripData {
+  startingLocation: string
+  location: string
+  startDate: string
+  endDate: string
+  budget: number
+  travelers: number
+  interests: string[]
+}
+
 export default function PlanTrip() {
   const router = useRouter()
-  const [tripData, setTripData] = useState(null)
+  const [tripData, setTripData] = useState<TripData | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
-  const { generateItinerary, isLoading, itinerary } = useGenerateItinerary()
+  const { mutate: generateItinerary, isPending, data: itinerary } = useGenerateItinerary()
 
   const handleTripSubmit = async (data: any) => {
     setTripData(data)
     setCurrentStep(2)
-    await generateItinerary(data)
+  }
+
+  const handleGenerateItinerary = () => {
+    if (tripData) {
+      setCurrentStep(3)
+      generateItinerary(tripData)
+    }
   }
 
   const steps = [
@@ -113,7 +129,7 @@ export default function PlanTrip() {
               
               <div className="text-center">
                 <button
-                  onClick={() => setCurrentStep(3)}
+                  onClick={handleGenerateItinerary}
                   className="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                 >
                   Generate Itinerary
@@ -122,12 +138,34 @@ export default function PlanTrip() {
             </motion.div>
           )}
 
-          {currentStep === 3 && itinerary && (
+          {currentStep === 3 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <ItineraryList itinerary={itinerary} />
+              {isPending ? (
+                <div className="text-center py-20">
+                  <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-600"></div>
+                  <p className="mt-4 text-gray-600">Generating your AI-powered itinerary...</p>
+                  <p className="mt-2 text-sm text-gray-500">This may take 30-60 seconds</p>
+                </div>
+              ) : itinerary ? (
+                <ItineraryList itinerary={itinerary} />
+              ) : (
+                <div className="text-center py-20">
+                  <p className="text-gray-600">No itinerary generated yet</p>
+                  <button
+                    onClick={() => {
+                      if (tripData) {
+                        generateItinerary(tripData)
+                      }
+                    }}
+                    className="mt-4 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  >
+                    Generate Itinerary
+                  </button>
+                </div>
+              )}
             </motion.div>
           )}
         </div>

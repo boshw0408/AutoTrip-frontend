@@ -3,6 +3,7 @@ import { apiClient } from "../lib/api";
 
 interface Trip {
   id: string;
+  origin?: string;
   location: string;
   startDate: string;
   endDate: string;

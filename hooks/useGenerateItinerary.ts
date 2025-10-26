@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../lib/api";
 
 interface TripData {
+  startingLocation: string;
   location: string;
   startDate: string;
   endDate: string;
@@ -12,6 +13,7 @@ interface TripData {
 
 interface ItineraryResponse {
   id: string;
+  origin?: string;
   location: string;
   duration: number;
   days: any[];
@@ -23,7 +25,17 @@ export function useGenerateItinerary() {
 
   return useMutation({
     mutationFn: async (tripData: TripData): Promise<ItineraryResponse> => {
-      const response = await apiClient.post("/itinerary/generate", tripData);
+      // Map frontend field names to backend field names
+      const payload = {
+        origin: tripData.startingLocation,
+        location: tripData.location,
+        start_date: tripData.startDate,
+        end_date: tripData.endDate,
+        budget: tripData.budget,
+        travelers: tripData.travelers,
+        interests: tripData.interests,
+      };
+      const response = await apiClient.post("/itinerary/generate", payload);
       return response.data;
     },
     onSuccess: (data) => {
@@ -38,7 +50,17 @@ export function useCreateTrip() {
 
   return useMutation({
     mutationFn: async (tripData: TripData) => {
-      const response = await apiClient.post("/trips", tripData);
+      // Map frontend field names to backend field names
+      const payload = {
+        origin: tripData.startingLocation,
+        location: tripData.location,
+        start_date: tripData.startDate,
+        end_date: tripData.endDate,
+        budget: tripData.budget,
+        travelers: tripData.travelers,
+        interests: tripData.interests,
+      };
+      const response = await apiClient.post("/trips", payload);
       return response.data;
     },
     onSuccess: () => {

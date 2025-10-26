@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Calendar, DollarSign, MapPin, Users, Plane } from 'lucide-react'
 
 interface TripFormData {
+  startingLocation: string
   location: string
   startDate: string
   endDate: string
@@ -58,14 +59,31 @@ export default function TripForm({ onSubmit }: TripFormProps) {
       </div>
 
       <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
-        {/* Location */}
+        {/* Starting Location */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <MapPin className="inline h-4 w-4 mr-1" />
+            Starting Location
+          </label>
+          <input
+            {...register('startingLocation', { required: 'Starting location is required' })}
+            type="text"
+            placeholder="e.g., San Francisco, CA"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+          {errors.startingLocation && (
+            <p className="mt-1 text-sm text-red-600">{errors.startingLocation.message}</p>
+          )}
+        </div>
+
+        {/* Destination */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <MapPin className="inline h-4 w-4 mr-1" />
             Destination
           </label>
           <input
-            {...register('location', { required: 'Location is required' })}
+            {...register('location', { required: 'Destination is required' })}
             type="text"
             placeholder="e.g., Paris, France"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"

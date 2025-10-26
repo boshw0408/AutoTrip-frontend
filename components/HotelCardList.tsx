@@ -11,15 +11,18 @@ interface Hotel {
   id: string
   name: string
   rating: number
-  price: number
+  price?: number
+  price_per_night?: number
   address: string
   amenities: string[]
-  image: string
-  distance: string
+  image?: string
+  photos?: string[]
+  distance?: string
+  distance_from_center?: string
 }
 
 export default function HotelCardList({ location }: HotelCardListProps) {
-  const { hotels, isLoading } = useHotels(location)
+  const { hotels, isLoading, error } = useHotels(location)
   const [selectedHotel, setSelectedHotel] = useState<string | null>(null)
 
   if (isLoading) {
@@ -37,6 +40,22 @@ export default function HotelCardList({ location }: HotelCardListProps) {
             </div>
           </div>
         ))}
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <p className="text-red-600">Failed to load hotels. Please try again.</p>
+      </div>
+    )
+  }
+
+  if (!hotels || hotels.length === 0) {
+    return (
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+        <p className="text-gray-600">No hotels found for this location.</p>
       </div>
     )
   }
@@ -103,10 +122,10 @@ export default function HotelCardList({ location }: HotelCardListProps) {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center text-green-600">
                     <DollarSign className="h-4 w-4 mr-1" />
-                    <span className="font-semibold">${hotel.price}</span>
+                    <span className="font-semibold">${hotel.price_per_night || hotel.price || 0}</span>
                     <span className="text-sm text-gray-600 ml-1">/night</span>
                   </div>
-                  <span className="text-sm text-gray-500">{hotel.distance} from center</span>
+                  <span className="text-sm text-gray-500">{hotel.distance_from_center || hotel.distance || 'N/A'} from center</span>
                 </div>
 
                 <div className="flex items-center space-x-2">
