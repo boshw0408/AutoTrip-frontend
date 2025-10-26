@@ -9,6 +9,7 @@ interface TripData {
   budget: number;
   travelers: number;
   interests: string[];
+  specifications?: string;
   selectedHotel?: any;
 }
 
@@ -36,6 +37,7 @@ export function useGenerateItinerary() {
         budget: tripData.budget,
         travelers: tripData.travelers,
         interests: tripData.interests,
+        specifications: tripData.specifications || "",
         selected_hotel: tripData.selectedHotel || null,
       };
       console.log("Sending payload:", payload);

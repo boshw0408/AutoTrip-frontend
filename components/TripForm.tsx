@@ -11,6 +11,7 @@ interface TripFormData {
   budget: number
   travelers: number
   interests: string[]
+  specifications?: string
 }
 
 interface TripFormProps {
@@ -128,7 +129,7 @@ export default function TripForm({ onSubmit }: TripFormProps) {
         {/* Budget and Travelers */}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
               <DollarSign className="inline h-4 w-4 mr-1" />
               Budget (USD)
             </label>
@@ -189,6 +190,21 @@ export default function TripForm({ onSubmit }: TripFormProps) {
               </motion.button>
             ))}
           </div>
+        </div>
+
+        {/* Trip Specifications */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Plane className="inline h-4 w-4 mr-1" />
+            Trip Specifications (Optional)
+          </label>
+          <textarea
+            {...register('specifications')}
+            placeholder="e.g., Prefer vegetarian restaurants, must visit the Golden Gate Bridge, avoid crowded tourist spots, early morning activities..."
+            rows={3}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+          />
+          <p className="mt-1 text-xs text-gray-500">Add any specific requirements or preferences for your trip</p>
         </div>
 
         {/* Submit Button */}

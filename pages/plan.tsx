@@ -17,6 +17,7 @@ interface TripData {
   budget: number
   travelers: number
   interests: string[]
+  specifications?: string
 }
 
 export default function PlanTrip() {
