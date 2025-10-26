@@ -117,29 +117,33 @@ export default function HotelCardList({ tripData, onHotelSelect }: HotelCardList
         >
           <div className="flex space-x-4">
             {/* Hotel Image */}
-            <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center">
-              <div className="text-3xl">🏨</div>
-            </div>
+            {hotel.image ? (
+              <img 
+                src={hotel.image} 
+                alt={hotel.name}
+                className="w-24 h-24 object-cover rounded-lg"
+              />
+            ) : (
+              <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center">
+                <div className="text-3xl">🏨</div>
+              </div>
+            )}
 
             {/* Hotel Info */}
             <div className="flex-1">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-lg font-semibold text-gray-900">{hotel.name}</h3>
-                <div className="flex items-center space-x-1">
-                  {renderStars(hotel.rating)}
-                  <span className="text-sm text-gray-600 ml-1">({hotel.rating})</span>
-                </div>
-              </div>
-
-              <div className="flex items-center text-gray-600 mb-2">
-                <MapPin className="h-4 w-4 mr-1" />
-                <span className="text-sm">{hotel.address}</span>
+                {hotel.rating > 0 && (
+                  <div className="flex items-center space-x-1">
+                    {renderStars(hotel.rating)}
+                    <span className="text-sm text-gray-600 ml-1">({hotel.rating})</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center text-green-600">
-                    <DollarSign className="h-4 w-4 mr-1" />
                     <span className="font-semibold">${Math.ceil(hotel.price_per_night || hotel.price || 0)}</span>
                     <span className="text-sm text-gray-600 ml-1">/night</span>
                   </div>
