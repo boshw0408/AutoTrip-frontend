@@ -1,10 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Star, MapPin, DollarSign, Wifi, Car, Coffee } from 'lucide-react'
 import { useHotels } from '../hooks/useHotels'
 
+interface TripData {
+  destination: string
+  check_in: string
+  check_out: string
+  travelers: number
+  budget: number
+  interests: string[]
+  starting_location?: string
+}
+
 interface HotelCardListProps {
-  location: string
+  tripData: TripData
+  onHotelSelect?: (hotel: Hotel | null) => void
 }
 
 interface Hotel {
@@ -21,9 +32,16 @@ interface Hotel {
   distance_from_center?: string
 }
 
-export default function HotelCardList({ location }: HotelCardListProps) {
-  const { hotels, isLoading, error } = useHotels(location)
+export default function HotelCardList({ tripData, onHotelSelect }: HotelCardListProps) {
+  const { data: hotels, isLoading, error } = useHotels(tripData)
   const [selectedHotel, setSelectedHotel] = useState<string | null>(null)
+  
+  const handleHotelClick = (hotel: Hotel) => {
+    setSelectedHotel(hotel.id)
+    if (onHotelSelect) {
+      onHotelSelect(hotel)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -95,7 +113,7 @@ export default function HotelCardList({ location }: HotelCardListProps) {
           className={`bg-white rounded-lg shadow-lg p-6 cursor-pointer transition-all duration-200 ${
             selectedHotel === hotel.id ? 'ring-2 ring-primary-500 shadow-xl' : 'hover:shadow-xl'
           }`}
-          onClick={() => setSelectedHotel(hotel.id)}
+          onClick={() => handleHotelClick(hotel)}
         >
           <div className="flex space-x-4">
             {/* Hotel Image */}
@@ -122,7 +140,7 @@ export default function HotelCardList({ location }: HotelCardListProps) {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center text-green-600">
                     <DollarSign className="h-4 w-4 mr-1" />
-                    <span className="font-semibold">${hotel.price_per_night || hotel.price || 0}</span>
+                    <span className="font-semibold">${Math.ceil(hotel.price_per_night || hotel.price || 0)}</span>
                     <span className="text-sm text-gray-600 ml-1">/night</span>
                   </div>
                   <span className="text-sm text-gray-500">{hotel.distance_from_center || hotel.distance || 'N/A'} from center</span>

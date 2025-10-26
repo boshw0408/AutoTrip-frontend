@@ -205,7 +205,7 @@ export default function ItineraryList({ itinerary }: ItineraryListProps) {
             <DollarSign className="h-5 w-5 text-green-600" />
             <span className="text-gray-700 font-medium">Total Estimated Cost:</span>
             <span className="text-2xl font-bold text-green-600">
-              ${itinerary.total_estimated_cost || budgetBreakdown.total}
+              ${Math.ceil(itinerary.total_estimated_cost || budgetBreakdown.total)}
             </span>
           </div>
         )}

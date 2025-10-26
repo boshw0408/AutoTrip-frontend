@@ -17,12 +17,14 @@ interface TripData {
   budget: number
   travelers: number
   interests: string[]
+  specifications?: string
 }
 
 export default function PlanTrip() {
   const router = useRouter()
   const [tripData, setTripData] = useState<TripData | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
+  const [selectedHotel, setSelectedHotel] = useState<any>(null)
   const { mutate: generateItinerary, isPending, data: itinerary } = useGenerateItinerary()
 
   const handleTripSubmit = async (data: any) => {
@@ -31,9 +33,17 @@ export default function PlanTrip() {
   }
 
   const handleGenerateItinerary = () => {
+    console.log("Generate button clicked!");
+    console.log("tripData:", tripData);
+    console.log("selectedHotel:", selectedHotel);
     if (tripData) {
       setCurrentStep(3)
-      generateItinerary(tripData)
+      // Add selected hotel to trip data
+      const tripDataWithHotel = { ...tripData, selectedHotel }
+      console.log("Calling generateItinerary with:", tripDataWithHotel);
+      generateItinerary(tripDataWithHotel)
+    } else {
+      console.error("No tripData available!");
     }
   }
 
@@ -46,7 +56,7 @@ export default function PlanTrip() {
   return (
     <>
       <Head>
-        <title>Plan Your Trip - Travel AI</title>
+        <title>Plan Your Trip - AutoTrip</title>
         <meta name="description" content="Plan your perfect trip with AI recommendations" />
       </Head>
 
@@ -119,7 +129,18 @@ export default function PlanTrip() {
               <div className="grid lg:grid-cols-2 gap-8">
                 <div>
                   <h2 className="text-2xl font-bold mb-6">Recommended Hotels</h2>
-                  <HotelCardList location={tripData.location} />
+                  <HotelCardList 
+                    tripData={{
+                      destination: tripData.location,
+                      check_in: tripData.startDate,
+                      check_out: tripData.endDate,
+                      travelers: tripData.travelers,
+                      budget: tripData.budget,
+                      interests: tripData.interests,
+                      starting_location: tripData.startingLocation
+                    }}
+                    onHotelSelect={setSelectedHotel}
+                  />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold mb-6">Map View</h2>
@@ -147,7 +168,7 @@ export default function PlanTrip() {
                 <div className="text-center py-20">
                   <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-600"></div>
                   <p className="mt-4 text-gray-600">Generating your AI-powered itinerary...</p>
-                  <p className="mt-2 text-sm text-gray-500">This may take 30-60 seconds</p>
+                  <p className="mt-2 text-sm text-gray-500">This may take few seconds</p>
                 </div>
               ) : itinerary ? (
                 <ItineraryList itinerary={itinerary} />
@@ -157,7 +178,8 @@ export default function PlanTrip() {
                   <button
                     onClick={() => {
                       if (tripData) {
-                        generateItinerary(tripData)
+                        const tripDataWithHotel = { ...tripData, selectedHotel }
+                        generateItinerary(tripDataWithHotel)
                       }
                     }}
                     className="mt-4 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
