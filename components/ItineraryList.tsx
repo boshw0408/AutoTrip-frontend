@@ -38,7 +38,8 @@ interface ItineraryListProps {
 export default function ItineraryList({ itinerary }: ItineraryListProps) {
   const handleDownloadPDF = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/itinerary/export-pdf', {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${API_BASE_URL}/api/itinerary/export-pdf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

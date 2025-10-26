@@ -31,10 +31,9 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
+    // No authentication system - just log errors
     if (error.response?.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem("auth_token");
-      window.location.href = "/login";
+      console.warn("Unauthorized access - authentication not implemented");
     }
     return Promise.reject(error);
   }

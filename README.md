@@ -30,10 +30,8 @@ frontend/
 │   └── ItineraryList.tsx
 ├── pages/              # Next.js pages
 │   ├── index.tsx
-│   ├── plan.tsx
-│   └── trip/[id].tsx
+│   └── plan.tsx
 ├── hooks/              # Custom React hooks
-│   ├── useTrip.ts
 │   ├── useGenerateItinerary.ts
 │   └── useHotels.ts
 ├── lib/                # Utilities and API client
